@@ -5,16 +5,16 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
+
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-// Models based on your MCD and description
+
 model Role {
   id        String  @id @default(uuid())
   libelle   String  @unique
@@ -63,10 +63,6 @@ model Courrier {
   typeId            String?
   type              TypeCourrier? @relation(fields: [typeId], references: [id])
 
-  // Destination by role
-  destinationRoleId String?
-  destinationRole   Role?    @relation(fields: [destinationRoleId], references: [id])
-
   // Creator (receptionniste)
   creatorId         String
   creator           User     @relation("Creator", fields: [creatorId], references: [id])
@@ -83,7 +79,8 @@ model ReponseCourrier {
   fichier_joint  String?
 
   courrierId     String
-  courrier       Courrier @relation(fields: [courierId], references: [id])
+  courrier Courrier @relation(fields: [courrierId], references: [id])
+
 
   responderId    String
   responder      User     @relation("Responder", fields: [responderId], references: [id])
