@@ -1,67 +1,54 @@
-import {
-  findAllUsers,
-  findUserById,
-  createNewUser,
-  updateUserById,
-  deleteUserById
-} from "../services/user.service.js";
+const userService = require("../services/user.service");
 
-export const getUsers = async (req, res) => {
+exports.getUsers = async (req, res) => {
   try {
-    const users = await findAllUsers();
+    const users = await userService.findAllUsers();
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error });
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
 
-export const getUserById = async (req, res) => {
+exports.getUserById = async (req, res) => {
   try {
-    const user = await findUserById(parseInt(req.params.id));
-
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur introuvable" });
-    }
-
+    const id = req.params.id;
+    const user = await userService.findUserById(id);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: "Erreur serveur", error });
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 };
 
-export const createUser = async (req, res) => {
+exports.createUser = async (req, res) => {
   try {
-    const user = await createNewUser(req.body);
+    const data = req.body;
+    const user = await userService.createNewUser(data);
     res.status(201).json(user);
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la création", error });
+    res.status(400).json({ message: "Erreur lors de la création", error: error.message });
   }
 };
 
-export const updateUser = async (req, res) => {
+exports.updateUser = async (req, res) => {
   try {
-    const user = await updateUserById(parseInt(req.params.id), req.body);
-
-    if (!user) {
-      return res.status(404).json({ message: "Utilisateur introuvable" });
-    }
-
+    const id = req.params.id;
+    const data = req.body;
+    const user = await userService.updateUserById(id, data);
+    if (!user) return res.status(404).json({ message: "Utilisateur introuvable" });
     res.json(user);
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la mise à jour", error });
+    res.status(400).json({ message: "Erreur lors de la mise à jour", error: error.message });
   }
 };
 
-export const deleteUser = async (req, res) => {
+exports.deleteUser = async (req, res) => {
   try {
-    const deleted = await deleteUserById(parseInt(req.params.id));
-
-    if (!deleted) {
-      return res.status(404).json({ message: "Utilisateur introuvable" });
-    }
-
+    const id = req.params.id;
+    const deleted = await userService.deleteUserById(id);
+    if (!deleted) return res.status(404).json({ message: "Utilisateur introuvable" });
     res.json({ message: "Utilisateur supprimé" });
   } catch (error) {
-    res.status(500).json({ message: "Erreur lors de la suppression", error });
+    res.status(500).json({ message: "Erreur lors de la suppression", error: error.message });
   }
 };
