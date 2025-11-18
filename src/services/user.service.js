@@ -1,52 +1,110 @@
-import bcrypt from "bcryptjs";
-import prisma from "../config/prisma.js";
+const bcrypt = require("bcrypt");
+const prisma = require("../prisma");
 
-export const findAllUsers = () => {
+// liste tous les utilisateurs (sans mot de passe)
+exports.findAllUsers = async () => {
   return prisma.user.findMany({
-    select: { id: true, name: true, email: true, role: true, createdAt: true }
-  });
-};
-
-export const findUserById = (id) => {
-  return prisma.user.findUnique({
-    where: { id },
-    select: { id: true, name: true, email: true, role: true, createdAt: true }
-  });
-};
-
-export const createNewUser = async (data) => {
-  const hashed = await bcrypt.hash(data.password, 10);
-
-  return prisma.user.create({
-    data: {
-      name: data.name,
-      email: data.email,
-      password: hashed,
-      role: data.role || "USER",
-    },
     select: {
-      id: true, name: true, email: true, role: true, createdAt: true
+      id: true,
+      nom: true,
+      prenom: true,
+      telephone: true,
+      email: true,
+      role: {
+        select: { libelle: true }
+      },
+      createdAt: true,
+      updatedAt: true
     }
   });
 };
 
-export const updateUserById = async (id, data) => {
+exports.findUserById = async (id) => {
+  return prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      nom: true,
+      prenom: true,
+      telephone: true,
+      email: true,
+      role: {
+        select: { libelle: true, id: true }
+      },
+      createdAt: true,
+      updatedAt: true
+    }
+  });
+};
+
+exports.createNewUser = async (data) => {
+  // data: { nom, prenom, telephone, email, password, roleId OR roleLibelle }
+  const exists = await prisma.user.findUnique({ where: { email: data.email } });
+  if (exists) throw new Error("Email déjà utilisé");
+
+  const hashed = await bcrypt.hash(data.password, 10);
+
+  // trouver role
+  let roleId = data.roleId;
+  if (!roleId) {
+    if (data.roleLibelle) {
+      const role = await prisma.role.findUnique({ where: { libelle: data.roleLibelle } });
+      if (!role) throw new Error(`Role '${data.roleLibelle}' introuvable`);
+      roleId = role.id;
+    } else {
+      // fallback : receptionniste
+      const defaultRole = await prisma.role.findUnique({ where: { libelle: "receptionniste" } });
+      if (!defaultRole) throw new Error("Role par défaut 'receptionniste' introuvable. Créez-le d'abord.");
+      roleId = defaultRole.id;
+    }
+  }
+
+  const user = await prisma.user.create({
+    data: {
+      nom: data.nom,
+      prenom: data.prenom || null,
+      telephone: data.telephone || null,
+      email: data.email,
+      password: hashed,
+      role: { connect: { id: roleId } }
+    },
+    select: {
+      id: true, nom: true, prenom: true, email: true,
+      role: { select: { libelle: true } },
+      createdAt: true
+    }
+  });
+
+  return user;
+};
+
+exports.updateUserById = async (id, data) => {
+  // si password présent, hash it
+  const updateData = { ...data };
   if (data.password) {
-    data.password = await bcrypt.hash(data.password, 10);
+    updateData.password = await bcrypt.hash(data.password, 10);
+  }
+
+  // Si roleLibelle envoyé, convertir en roleId
+  if (data.roleLibelle) {
+    const role = await prisma.role.findUnique({ where: { libelle: data.roleLibelle } });
+    if (!role) throw new Error(`Role '${data.roleLibelle}' introuvable`);
+    updateData.role = { connect: { id: role.id } };
   }
 
   try {
-    return prisma.user.update({
+    const user = await prisma.user.update({
       where: { id },
-      data,
-      select: { id: true, name: true, email: true, role: true }
+      data: updateData,
+      select: { id: true, nom: true, prenom: true, email: true, role: { select: { libelle: true } } }
     });
-  } catch (error) {
+    return user;
+  } catch (err) {
     return null;
   }
 };
 
-export const deleteUserById = async (id) => {
+exports.deleteUserById = async (id) => {
   try {
     await prisma.user.delete({ where: { id } });
     return true;
