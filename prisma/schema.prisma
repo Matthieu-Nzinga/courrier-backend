@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Models based on your MCD and description
+model Role {
+  id        String  @id @default(uuid())
+  libelle   String  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+}
+
+model User {
+  id        String   @id @default(uuid())
+  nom       String
+  prenom    String?
+  telephone String?
+  email     String   @unique
+  password  String
+
+  roleId    String
+  role      Role     @relation(fields: [roleId], references: [id])
+
+  notifications     Notification[]
+  courriersCreated  Courrier[] @relation("Creator")
+  reponses          ReponseCourrier[] @relation("Responder")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TypeCourrier {
+  id        String   @id @default(uuid())
+  libelle   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courriers Courrier[]
+}
+
+model Courrier {
+  id                String   @id @default(uuid())
+  origine           String?
+  objet             String
+  date_signature    DateTime?
+  fichier_joint     String?
+
+  // Type
+  typeId            String?
+  type              TypeCourrier? @relation(fields: [typeId], references: [id])
+
+  // Destination by role
+  destinationRoleId String?
+  destinationRole   Role?    @relation(fields: [destinationRoleId], references: [id])
+
+  // Creator (receptionniste)
+  creatorId         String
+  creator           User     @relation("Creator", fields: [creatorId], references: [id])
+
+  reponses          ReponseCourrier[]
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ReponseCourrier {
+  id             String   @id @default(uuid())
+  date_signature DateTime?
+  fichier_joint  String?
+
+  courrierId     String
+  courrier       Courrier @relation(fields: [courierId], references: [id])
+
+  responderId    String
+  responder      User     @relation("Responder", fields: [responderId], references: [id])
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  statut    String   @default("unread")
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
