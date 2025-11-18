@@ -119,33 +119,24 @@
 const express = require("express");
 const courrierController = require("../controllers/courrier.controller");
 const authMiddleware = require("../middlewares/auth.middleware");
-const multer = require("multer");
+const uploadMiddleware = require("../middlewares/upload.middleware");
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage });
-
+// Appliquer le middleware d'authentification à toutes les routes
 router.use(authMiddleware);
 
 router.get("/", courrierController.getCourriers);
-
 router.get("/:id", courrierController.getCourrierById);
 
-router.post("/", upload.single("fichier_joint"), (req, res) => {
-  req.body.fichier_joint = req.file.path;
+// Création avec upload PDF
+router.post("/", uploadMiddleware.single("fichier_joint"), (req, res) => {
+  if (req.file) req.body.fichier_joint = req.file.path; // Ajout du path du PDF
   return courrierController.createCourrier(req, res);
 });
 
-router.put("/:id", upload.single("fichier_joint"), (req, res) => {
+// Mise à jour avec upload PDF
+router.put("/:id", uploadMiddleware.single("fichier_joint"), (req, res) => {
   if (req.file) req.body.fichier_joint = req.file.path;
   return courrierController.updateCourrier(req, res);
 });
