@@ -36,7 +36,7 @@ exports.create = async ({ origine, objet, date_signature, fichier_joint, typeId,
 
   await prisma.notification.create({
     data: {
-      message: "Vous avez un courrier qui a été déposé dans votre boîte",
+      message: `Vous avez un courrier provenant de ${origine} qui a été déposé dans votre boîte`,
       user: { connect: { id: destUserId } },
     },
   });
