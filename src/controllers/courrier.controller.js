@@ -40,25 +40,6 @@ exports.getCourriersUser = async (req, res) => {
   }
 };
 
-
-// exports.createCourrier = async (req, res) => {
-//   try {
-//     const data = await courrierService.create({
-//       origine: req.body.origine,
-//       objet: req.body.objet,
-//       date_signature: req.body.date_signature,
-//       fichier_joint: req.body.fichier_joint,
-//       typeId: req.body.typeId,
-//       destUserId: req.body.destUserId,
-//       creatorId: req.user.userId,
-//     });
-
-//     res.status(201).json(data);
-//   } catch (err) {
-//     res.status(400).json({ message: "Erreur lors de la création", err });
-//   }
-// };
-
 exports.createCourrier = async (req, res) => {
   try {
     const data = await courrierService.create({

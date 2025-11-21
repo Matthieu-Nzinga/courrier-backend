@@ -6,6 +6,8 @@ exports.findAll = () => {
       type: true,
       creator: true,
       reponses: true,
+      origine: true,
+      destinataire: true,
     },
     orderBy: { createdAt: "desc" },
   });
@@ -18,6 +20,8 @@ exports.findById = (id) => {
       type: true,
       creator: true,
       reponses: true,
+      origine: true,
+      destinataire: true,
     },
   });
 };
@@ -29,59 +33,12 @@ exports.findByUser = (userId) => {
       type: true,
       creator: true,
       reponses: true,
+      origine: true,
+      destinataire: true,
     },
     orderBy: { createdAt: "desc" },
   });
 };
-
-
-// exports.create = async ({ origine, objet, date_signature, fichier_joint, typeId, destUserId, creatorId }) => {
-//   try {
-//     const destUser = await prisma.user.findUnique({
-//       where: { id: destUserId },
-//       include: { role: true }
-//     });
-
-//     if (!destUser) throw new Error("Le destinataire n'existe pas");
-
-//     const rolesAutorises = ["ministre", "dircab", "conseiller"];
-//     if (!rolesAutorises.includes(destUser.role.libelle)) {
-//       throw new Error(`Le destinataire doit être Ministre, Dircab ou Conseiller`);
-//     }
-
-//     const year = new Date().getFullYear();
-//     const count = await prisma.courrier.count();  
-//     const compteurFormate = String(count + 1).padStart(4, '0');
-//     const numero_courrier = `${compteurFormate}/MD-MDNAC/CAB/NMCE/${year}`;
-
-//     const courrier = await prisma.courrier.create({
-//       data: {
-//         numero_courrier,
-//         origine,
-//         objet,
-//         date_signature: date_signature ? new Date(date_signature) : null,
-//         fichier_joint,
-//         type: { connect: { id: typeId } },
-//         creator: { connect: { id: creatorId } },
-//         destinataire: { connect: { id: destUserId } } 
-//       },
-//     });
-
-//     const notification = await prisma.notification.create({
-//       data: {
-//         message: `Vous avez reçu un courrier provenant de ${origine} pour l'objet: ${objet}`,
-//         user: { connect: { id: destUserId } },
-//       },
-//     });
-
-
-//     return courrier;
-
-//   } catch (err) {
-//     console.error("Erreur dans create courrier:", err);
-//     throw err; 
-//   }
-// };
 
 exports.create = async ({ origineId, origineText, objet, date_signature, fichier_joint, typeId, destUserId, creatorId }) => {
   try {
@@ -98,7 +55,7 @@ exports.create = async ({ origineId, origineText, objet, date_signature, fichier
       throw new Error(`Le destinataire doit être Ministre, Dircab ou Conseiller`);
     }
 
-    // 🔎 Gestion de l'origine
+    // Gestion de l'origine
     let origineIdToUse = origineId;
 
     if (!origineId && origineText) {
@@ -108,16 +65,26 @@ exports.create = async ({ origineId, origineText, objet, date_signature, fichier
       origineIdToUse = newOrigine.id;
     }
 
-    // ⚠️ Si aucune info sur l'origine → erreur
     if (!origineIdToUse) throw new Error("Vous devez choisir une origine ou en ajouter une.");
 
-    // Génération numéro courrier
+    // Génération numéro_courrier sécurisé
     const year = new Date().getFullYear();
-    const count = await prisma.courrier.count();
-    const compteurFormate = String(count + 1).padStart(4, '0');
+    const lastCourrier = await prisma.courrier.findFirst({
+      where: { createdAt: { gte: new Date(`${year}-01-01`) } },
+      orderBy: { createdAt: "desc" },
+    });
+
+    let nextNumber = 1;
+    if (lastCourrier) {
+      const match = lastCourrier.numero_courrier.match(/^(\d{4})\//);
+      if (match) nextNumber = parseInt(match[1], 10) + 1;
+    }
+
+    const compteurFormate = String(nextNumber).padStart(4, "0");
     const numero_courrier = `${compteurFormate}/MD-MDNAC/CAB/NMCE/${year}`;
 
-    const courrier = await prisma.courrier.create({
+    // Création courrier
+    const newCourrier = await prisma.courrier.create({
       data: {
         numero_courrier,
         origine: { connect: { id: origineIdToUse } },
@@ -131,14 +98,15 @@ exports.create = async ({ origineId, origineText, objet, date_signature, fichier
       include: { origine: true }
     });
 
+   
     await prisma.notification.create({
       data: {
-        message: `Vous avez reçu un courrier provenant de ${courrier.origine.libelle} pour l'objet: ${objet}`,
+        message: `Vous avez reçu un courrier provenant de ${newCourrier.origine.libelle} pour l'objet: ${objet}`,
         user: { connect: { id: destUserId } },
       },
     });
 
-    return courrier;
+    return newCourrier;
 
   } catch (err) {
     console.error("Erreur dans create courrier:", err);

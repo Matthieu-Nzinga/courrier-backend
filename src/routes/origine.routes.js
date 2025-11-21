@@ -1,7 +1,7 @@
 /**
  * @swagger
  * tags:
- *   name: Origine
+ *   name: Origines
  *   description: Gestion des origines de courriers
  */
 
@@ -28,10 +28,10 @@
 
 /**
  * @swagger
- * /origines:
+ * /api/origines:
  *   get:
  *     summary: Récupérer la liste des origines
- *     tags: [Origine]
+ *     tags: [Origines]
  *     responses:
  *       200:
  *         description: Liste des origines
@@ -47,31 +47,29 @@
 
 /**
  * @swagger
- * /origines:
+ * /api/origines:
  *   post:
- *     summary: Ajouter une nouvelle origine (ou récupérer si existe)
- *     tags: [Origine]
+ *     summary: Créer une nouvelle origine
+ *     tags: [Origines]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - libelle
  *             properties:
  *               libelle:
  *                 type: string
- *                 example: Ministère de l'Intérieur
+ *                 example: "Secrétariat Général"
  *     responses:
  *       201:
- *         description: Origine créée ou déjà existante
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Origine'
+ *         description: Origine créée avec succès
  *       400:
- *         description: Mauvaise requête (ex: libelle vide)
- *       500:
- *         description: Erreur serveur
+ *         description: "Mauvaise requête, libelle vide"
+ *       409:
+ *         description: L'origine existe déjà
  */
 
 const router = require("express").Router();
