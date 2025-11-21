@@ -62,7 +62,7 @@
  *             properties:
  *               libelle:
  *                 type: string
- *                 example: "Secrétariat Général"
+ *                 example: "string"
  *     responses:
  *       201:
  *         description: Origine créée avec succès
