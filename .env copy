@@ -1,0 +1,11 @@
+# DATABASE_URL="postgresql://postgres:Paris123@localhost:5432/gestion_courrier"
+JWT_SECRET=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30
+FRONTEND_ORIGIN=http://localhost:5173
+NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92ZWx0YXRheGlweWV6ZWl0cG5rIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MzcwODc5MiwiZXhwIjoyMDc5Mjg0NzkyfQ.CbCZ2ChU-hfjGIN3kYlqVnuOudG-Dem5dgflwGw6c8M
+NEXT_PUBLIC_SUPABASE_URL=https://oveltataxipyezeitpnk.supabase.co
+
+# Connect to Supabase via connection pooling
+DATABASE_URL="postgresql://postgres.oveltataxipyezeitpnk:prCdtWg74SmlXMDH@aws-1-eu-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+# Direct connection to the database. Used for migrations
+DIRECT_URL="postgresql://postgres.oveltataxipyezeitpnk:prCdtWg74SmlXMDH@aws-1-eu-north-1.pooler.supabase.com:5432/postgres"
