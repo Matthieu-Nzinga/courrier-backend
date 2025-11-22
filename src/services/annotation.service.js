@@ -1,4 +1,4 @@
-const prisma = require("../configs/prisma");
+const prisma = require("../prisma");
 
 exports.create = async ({ contenu, priorite, courrierId, auteurId }) => {
   return await prisma.annotation.create({
