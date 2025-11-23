@@ -79,6 +79,12 @@ exports.create = async ({ origineId, origineText, objet, date_signature, fichier
 
     if (!origineIdToUse) throw new Error("Vous devez choisir une origine ou en ajouter une.");
 
+    const statutInitial = await prisma.statutCourrier.findUnique({
+      where: { libelle: 'Non assigné' }
+    });
+
+    if (!statutInitial) throw new Error("Statut 'Non assigné' manquant dans la base.");
+
     // Génération numéro_courrier sécurisé
     const year = new Date().getFullYear();
     const lastCourrier = await prisma.courrier.findFirst({
@@ -105,7 +111,8 @@ exports.create = async ({ origineId, origineText, objet, date_signature, fichier
         fichier_joint,
         type: { connect: { id: typeId } },
         creator: { connect: { id: creatorId } },
-        destinataire: { connect: { id: destUserId } }
+        destinataire: { connect: { id: destUserId } },
+        statut: { connect: { id: statutInitial.id } }
       },
       include: { origine: true }
     });
@@ -199,9 +206,6 @@ exports.update = async (id, data) => {
     throw err;
   }
 };
-
-
-
 
 exports.remove = async (id) => {
   try {

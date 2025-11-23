@@ -85,12 +85,24 @@ model Courrier {
   creatorId         String
   creator           User     @relation("Creator", fields: [creatorId], references: [id])
 
+  statutId          String?
+  statut            StatutCourrier? @relation(fields: [statutId], references: [id])
+
   reponses          ReponseCourrier[]
   annotations       Annotation[]
 
 
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+}
+
+model StatutCourrier {
+  id        String   @id @default(uuid())
+  libelle   String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  courriers Courrier[]
 }
 
 model Annotation {
