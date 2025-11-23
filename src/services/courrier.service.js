@@ -1,7 +1,7 @@
 const prisma = require("../prisma");
 
-exports.findAll = () => {
-  return prisma.courrier.findMany({
+exports.findAll = async (userId) => {
+  const courriers = await prisma.courrier.findMany({
     include: {
       type: true,
       creator: true,
@@ -11,14 +11,22 @@ exports.findAll = () => {
       annotations: {
         include: { auteur: true },
         orderBy: { createdAt: "desc" }
-      }
+      },
+      courriersLu: {
+        where: { userId }, // on récupère juste l'état de lecture pour cet utilisateur
+      },
     },
     orderBy: { createdAt: "desc" },
   });
+
+  return courriers.map(c => ({
+    ...c,
+    estLu: c.courriersLu.length > 0 ? c.courriersLu[0].lu : false
+  }));
 };
 
-exports.findById = (id) => {
-  return prisma.courrier.findUnique({
+exports.findById = async (id, userId) => {
+  const courrier = await prisma.courrier.findUnique({
     where: { id },
     include: {
       type: true,
@@ -29,13 +37,23 @@ exports.findById = (id) => {
       annotations: {
         include: { auteur: true },
         orderBy: { createdAt: "desc" }
-      }
+      },
+      courriersLu: {
+        where: { userId },
+      },
     },
   });
+
+  if (!courrier) return null;
+
+  return {
+    ...courrier,
+    estLu: courrier.courriersLu.length > 0 ? courrier.courriersLu[0].lu : false
+  };
 };
 
-exports.findByUser = (userId) => {
-  return prisma.courrier.findMany({
+exports.findByUser = async (userId) => {
+  const courriers = await prisma.courrier.findMany({
     where: { destinataire: { id: userId } },
     include: {
       type: true,
@@ -46,10 +64,18 @@ exports.findByUser = (userId) => {
       annotations: {
         include: { auteur: true },
         orderBy: { createdAt: "desc" }
-      }
+      },
+      courriersLu: {
+        where: { userId },
+      },
     },
     orderBy: { createdAt: "desc" },
   });
+
+  return courriers.map(c => ({
+    ...c,
+    estLu: c.courriersLu.length > 0 ? c.courriersLu[0].lu : false
+  }));
 };
 
 exports.create = async ({ origineId, origineText, objet, date_signature, fichier_joint, typeId, destUserId, creatorId }) => {
