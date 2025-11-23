@@ -165,6 +165,19 @@ exports.update = async (id, data) => {
     }
 
     
+    if (updateData.statutLibelle) {
+      const statut = await prisma.statutCourrier.findUnique({
+        where: { libelle: updateData.statutLibelle },
+      });
+
+      if (!statut) throw new Error(`Statut '${updateData.statutLibelle}' not found`);
+
+      updateData.statut = { connect: { id: statut.id } };
+      delete updateData.statutLibelle;
+    }
+
+
+    
     if (updateData.destUserId) {
 
       const newDest = await prisma.user.findUnique({

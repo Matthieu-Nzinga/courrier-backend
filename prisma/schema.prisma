@@ -88,6 +88,8 @@ model Courrier {
   statutId          String?
   statut            StatutCourrier? @relation(fields: [statutId], references: [id])
 
+  lu                Boolean  @default(false)
+
   reponses          ReponseCourrier[]
   annotations       Annotation[]
 
