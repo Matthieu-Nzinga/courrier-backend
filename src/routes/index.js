@@ -9,6 +9,7 @@ const notificationRoutes = require("./notification.routes");
 const annotationRoutes = require("./annotation.routes");
 const origineRoutes = require("./origine.routes");
 const courrierLuRoutes = require("./courrierLu.routes");
+const dashboardRoutes = require("./dashboard.routes");
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use("/notifications", notificationRoutes);
 router.use("/annotations", annotationRoutes);
 router.use("/origines", origineRoutes);
 router.use("/courrier-lu", courrierLuRoutes);
+router.use("/dashboard", dashboardRoutes);
 
 module.exports = router;
