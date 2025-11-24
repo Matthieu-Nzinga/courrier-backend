@@ -233,7 +233,7 @@ exports.update = async (id, data) => {
     if (data.destUserId) {
       await prisma.notification.create({
         data: {
-          message: `Vous venez de recevoir un courrier modifié`,
+          message: `Vous avez reçu un courrier provenant de ${result.origine?.libelle ?? "N/A"} pour l'objet: ${result.objet}`,
           user: { connect: { id: data.destUserId } },
         },
       });
