@@ -3,8 +3,8 @@ const courrierLuService = require("../services/courrierLu.service");
 
 exports.markCourrierAsRead = async (req, res) => {
   try {
-    const courrierId = req.params.id;
-    const userId = req.user.id;
+    const courrierId = req.params.courrierId;
+    const userId = req.user.userId;
 
     const result = await courrierLuService.markAsRead({ courrierId, userId });
     res.status(200).json(result);
@@ -17,7 +17,7 @@ exports.markCourrierAsRead = async (req, res) => {
 
 exports.getReadsForCourrier = async (req, res) => {
   try {
-    const courrierId = req.params.id;
+    const courrierId = req.params.courrierId;
     const result = await courrierLuService.getAllReadsForCourrier(courrierId);
     res.json(result);
   } catch (err) {
