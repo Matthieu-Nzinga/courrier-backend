@@ -7,7 +7,8 @@ const prisma = require("../prisma");
 exports.getByUser = (userId) => {
   return prisma.notification.findMany({
     where: { userId },
-    orderBy: { createdAt: "desc" }
+    orderBy: { createdAt: "desc" },
+    include: { courrier: true }
   });
 };
 

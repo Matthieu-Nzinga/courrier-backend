@@ -148,6 +148,7 @@ exports.create = async ({ origineId, origineText, objet, date_signature, fichier
       data: {
         message: `Vous avez reçu un courrier provenant de ${newCourrier.origine.libelle} pour l'objet: ${objet}`,
         user: { connect: { id: destUserId } },
+        courrier: { connect: { id } }
       },
     });
 
@@ -233,8 +234,9 @@ exports.update = async (id, data) => {
     if (data.destUserId) {
       await prisma.notification.create({
         data: {
-          message: `Vous venez de recevoir un courrier modifié`,
+          message: `Vous avez reçu un courrier provenant de ${result.origine?.libelle ?? "N/A"} pour l'objet: ${result.objet}`,
           user: { connect: { id: data.destUserId } },
+          courrier: { connect: { id } }
         },
       });
     }
