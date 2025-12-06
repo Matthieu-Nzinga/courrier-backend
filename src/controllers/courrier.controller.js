@@ -84,3 +84,30 @@ exports.deleteCourrier = async (req, res) => {
     res.status(500).json({ message: "Erreur lors de la suppression", err });
   }
 };
+
+exports.getCourriersPaginated = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const data = await courrierService.findAllPaginated(userId, page, limit);
+
+    // Ajout pdfUrl
+    const finalRows = data.rows.map(c => addPdfUrl(c, req));
+
+    res.json({
+      page: data.page,
+      limit: data.limit,
+      total: data.total,
+      totalPages: data.totalPages,
+      rows: finalRows
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur", err });
+  }
+};
+
