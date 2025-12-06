@@ -20,6 +20,42 @@
 
 /**
  * @openapi
+ * /courriers/paginated/all:
+ *   get:
+ *     tags: [Courrier]
+ *     summary: Liste paginée des courriers
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: page
+ *         in: query
+ *         required: false
+ *         schema: { type: integer, default: 1 }
+ *       - name: limit
+ *         in: query
+ *         required: false
+ *         schema: { type: integer, default: 10 }
+ *     responses:
+ *       200:
+ *         description: Liste paginée
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 page: { type: integer }
+ *                 limit: { type: integer }
+ *                 total: { type: integer }
+ *                 totalPages: { type: integer }
+ *                 rows:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ */
+
+
+/**
+ * @openapi
  * /courriers/my:
  *   get:
  *     tags: [Courrier]
