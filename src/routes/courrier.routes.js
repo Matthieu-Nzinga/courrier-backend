@@ -178,6 +178,7 @@ const router = express.Router();
 router.use(authMiddleware);
 
 router.get("/", courrierController.getCourriers);
+router.get("/paginated/all", courrierController.getCourriersPaginated);
 router.get("/my", courrierController.getCourriersUser);
 router.get("/:id", courrierController.getCourrierById);
 
