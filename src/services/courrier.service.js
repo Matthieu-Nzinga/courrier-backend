@@ -81,7 +81,7 @@ exports.findByUser = async (userId) => {
   }));
 };
 
-exports.create = async ({ origineId, origineText, objet, date_signature, fichier_joint, typeId, destUserId, creatorId }) => {
+exports.create = async ({ origineId, origineText, objet, description, date_signature, fichier_joint, typeId, destUserId, creatorId }) => {
   try {
     // Vérification destinataire
     const destUser = await prisma.user.findUnique({
@@ -136,6 +136,7 @@ exports.create = async ({ origineId, origineText, objet, date_signature, fichier
         numero_courrier,
         origine: { connect: { id: origineIdToUse } },
         objet,
+        description,
         date_signature: date_signature ? new Date(date_signature) : null,
         fichier_joint,
         type: { connect: { id: typeId } },

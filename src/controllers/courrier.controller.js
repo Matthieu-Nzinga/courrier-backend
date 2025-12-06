@@ -48,6 +48,7 @@ exports.createCourrier = async (req, res) => {
       origineId: req.body.origineId,
       origineText: req.body.origineText,
       objet: req.body.objet,
+      description: req.body.description,
       date_signature: req.body.date_signature,
       fichier_joint: req.body.fichier_joint,
       typeId: req.body.typeId,

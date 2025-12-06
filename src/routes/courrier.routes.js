@@ -103,6 +103,7 @@
  *                 type: string
  *                 description: Texte d'une nouvelle origine s'il n'existe pas
  *               objet: { type: string }
+ *               description: { type: string }
  *               date_signature: { type: string, format: date }
  *               fichier_joint:
  *                 type: string
@@ -136,6 +137,7 @@
  *             properties:
  *               origine: { type: string }
  *               objet: { type: string }
+ *               description: { type: string }
  *               date_signature: { type: string, format: date }
  *               fichier_joint:
  *                 type: string
