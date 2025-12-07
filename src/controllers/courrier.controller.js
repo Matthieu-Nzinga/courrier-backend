@@ -1,5 +1,6 @@
 const courrierService = require("../services/courrier.service");
 const { putObject } = require("../utils/s3/putObject");
+const { deleteObject } = require("../utils/s3/deleteObject");
 const { generateFileName } = require("../utils/fileNaming");
 
 const addPdfUrl = (courrier) => ({
@@ -69,14 +70,17 @@ exports.createCourrier = async (req, res) => {
 
 exports.updateCourrier = async (req, res) => {
   try {
-    const existing = await courrierService.findById(req.params.id, req.user.userId);
-    if (!existing) return res.status(404).json({ message: "Courrier introuvable" });
+    const existing = await courrierService.findById(
+      req.params.id,
+      req.user.userId
+    );
+    if (!existing)
+      return res.status(404).json({ message: "Courrier introuvable" });
 
     const updateData = { ...req.body };
 
     if (req.file) {
-      const fileName = existing.s3_key || generateFileName(req.file.originalname);
-      const result = await putObject(req.file.buffer, fileName);
+      const result = await putObject(req.file.buffer, existing.s3_key);
       updateData.fichier_joint = result?.url;
       updateData.s3_key = result?.key;
     }
@@ -90,9 +94,22 @@ exports.updateCourrier = async (req, res) => {
 
 exports.deleteCourrier = async (req, res) => {
   try {
-    const deleted = await courrierService.remove(req.params.id);
-    if (!deleted)
+    const courrier = await courrierService.findById(
+      req.params.id,
+      req.user.userId
+    );
+    if (!courrier)
       return res.status(404).json({ message: "Courrier introuvable" });
+
+    const data = await deleteObject(courrier.s3_key);
+
+    if (data.status !== 204) {
+      return res
+        .status(500)
+        .json({ message: "Erreur lors de la suppression sjsjsj" });
+    }
+
+    await courrierService.remove(req.params.id);
     res.json({ message: "Courrier supprimé" });
   } catch (err) {
     res.status(500).json({ message: "Erreur lors de la suppression", err });
