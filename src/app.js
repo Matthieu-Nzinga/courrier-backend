@@ -4,8 +4,6 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const routes = require("./routes");
 const setupSwagger = require("./utils/swagger");
-const path = require("path");
-require("dotenv").config();
 
 const app = express();
 
