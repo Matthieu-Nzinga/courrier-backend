@@ -3,7 +3,7 @@ name: Doploy Node Application
 on:
   push:
     branches:
-      - aws-add
+      - main
 
 jobs:
   build:
