@@ -1,5 +1,4 @@
 const notificationService = require("../services/notification.service");
-const { emitNotification } = require("../utils/socketEmitter");
 
 /**
  * GET /api/notifications/my
@@ -8,7 +7,8 @@ const { emitNotification } = require("../utils/socketEmitter");
 exports.getMyNotifications = async (req, res) => {
   try {
     const userId = req.user && (req.user.userId || req.user.id);
-    if (!userId) return res.status(401).json({ message: "Utilisateur non identifié" });
+    if (!userId)
+      return res.status(401).json({ message: "Utilisateur non identifié" });
 
     const notifications = await notificationService.getByUser(userId);
     res.json(notifications);
@@ -25,12 +25,14 @@ exports.getMyNotifications = async (req, res) => {
 exports.markAsRead = async (req, res) => {
   try {
     const userId = req.user && (req.user.userId || req.user.id);
-    if (!userId) return res.status(401).json({ message: "Utilisateur non identifié" });
+    if (!userId)
+      return res.status(401).json({ message: "Utilisateur non identifié" });
 
     const notifId = req.params.id;
     const ok = await notificationService.markAsRead(notifId, userId);
 
-    if (!ok) return res.status(404).json({ message: "Notification introuvable" });
+    if (!ok)
+      return res.status(404).json({ message: "Notification introuvable" });
 
     res.json({ message: "Notification marquée comme lue" });
   } catch (err) {
@@ -46,13 +48,16 @@ exports.markAsRead = async (req, res) => {
 exports.createNotification = async (req, res) => {
   try {
     const { userId, titre, message, courrierId } = req.body;
-    
+
     if (!userId || !titre || !message) {
       return res.status(400).json({ message: "Données manquantes" });
     }
 
     const notification = await notificationService.createNotification(
-      userId, titre, message, courrierId
+      userId,
+      titre,
+      message,
+      courrierId
     );
 
     res.status(201).json(notification);
@@ -69,7 +74,8 @@ exports.createNotification = async (req, res) => {
 exports.getUnreadCount = async (req, res) => {
   try {
     const userId = req.user && (req.user.userId || req.user.id);
-    if (!userId) return res.status(401).json({ message: "Utilisateur non identifié" });
+    if (!userId)
+      return res.status(401).json({ message: "Utilisateur non identifié" });
 
     const count = await notificationService.countUnread(userId);
     res.json({ unread: count });
