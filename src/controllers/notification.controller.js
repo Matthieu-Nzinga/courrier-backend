@@ -1,4 +1,5 @@
 const notificationService = require("../services/notification.service");
+const { emitNotification } = require("../utils/socketEmitter");
 
 /**
  * GET /api/notifications/my
@@ -34,6 +35,29 @@ exports.markAsRead = async (req, res) => {
     res.json({ message: "Notification marquée comme lue" });
   } catch (err) {
     console.error("markAsRead error:", err);
+    res.status(500).json({ message: "Erreur serveur" });
+  }
+};
+
+/**
+ * POST /api/notifications
+ * Crée une nouvelle notification
+ */
+exports.createNotification = async (req, res) => {
+  try {
+    const { userId, titre, message, courrierId } = req.body;
+    
+    if (!userId || !titre || !message) {
+      return res.status(400).json({ message: "Données manquantes" });
+    }
+
+    const notification = await notificationService.createNotification(
+      userId, titre, message, courrierId
+    );
+
+    res.status(201).json(notification);
+  } catch (err) {
+    console.error("createNotification error:", err);
     res.status(500).json({ message: "Erreur serveur" });
   }
 };
