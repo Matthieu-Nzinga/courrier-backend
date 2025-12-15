@@ -403,3 +403,80 @@ exports.findByUserPaginated = async (
     rows,
   };
 };
+
+exports.validateCourrier = async (courrierId, userId, commentaire) => {
+  return prisma.$transaction(async (tx) => {
+    const courrier = await tx.courrier.findUnique({
+      where: { id: courrierId },
+      include: { archive: true },
+    });
+
+    if (!courrier) throw new Error("Courrier introuvable");
+    if (courrier.archive)
+      throw new Error("Ce courrier est déjà archivé");
+
+    const statutValide = await tx.statutCourrier.findUnique({
+      where: { libelle: "Validé" },
+    });
+
+    if (!statutValide)
+      throw new Error("Statut 'Validé' introuvable");
+
+    await tx.courrier.update({
+      where: { id: courrierId },
+      data: {
+        statut: { connect: { id: statutValide.id } },
+      },
+    });
+
+    await tx.archiveCourrier.create({
+      data: {
+        categorie: "TRAITE",
+        commentaire,
+        courrier: { connect: { id: courrierId } },
+        archivedBy: { connect: { id: userId } },
+      },
+    });
+
+    return true;
+  });
+};
+
+exports.rejectCourrier = async (courrierId, userId, commentaire) => {
+  return prisma.$transaction(async (tx) => {
+    const courrier = await tx.courrier.findUnique({
+      where: { id: courrierId },
+      include: { archive: true },
+    });
+
+    if (!courrier) throw new Error("Courrier introuvable");
+    if (courrier.archive)
+      throw new Error("Ce courrier est déjà archivé");
+
+    const statutRejete = await tx.statutCourrier.findUnique({
+      where: { libelle: "Rejeté" },
+    });
+
+    if (!statutRejete)
+      throw new Error("Statut 'Rejeté' introuvable");
+
+    await tx.courrier.update({
+      where: { id: courrierId },
+      data: {
+        statut: { connect: { id: statutRejete.id } },
+      },
+    });
+
+    await tx.archiveCourrier.create({
+      data: {
+        categorie: "CLASSE_SANS_SUITE",
+        commentaire,
+        courrier: { connect: { id: courrierId } },
+        archivedBy: { connect: { id: userId } },
+      },
+    });
+
+    return true;
+  });
+};
+

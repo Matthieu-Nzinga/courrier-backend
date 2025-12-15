@@ -172,3 +172,32 @@ exports.getCourriersUserPaginated = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", err });
   }
 };
+
+exports.validateCourrier = async (req, res) => {
+  try {
+    await courrierService.validateCourrier(
+      req.params.id,
+      req.user.userId,
+      req.body.commentaire
+    );
+
+    res.json({ message: "Courrier validé et archivé (Traité)" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.rejectCourrier = async (req, res) => {
+  try {
+    await courrierService.rejectCourrier(
+      req.params.id,
+      req.user.userId,
+      req.body.commentaire
+    );
+
+    res.json({ message: "Courrier rejeté et classé sans suite" });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+

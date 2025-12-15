@@ -234,6 +234,74 @@
 
 /**
  * @openapi
+ * /courriers/{id}/validate:
+ *   post:
+ *     tags: [Courrier]
+ *     summary: Valider un courrier et l’archiver comme traité
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               commentaire:
+ *                 type: string
+ *                 description: Commentaire optionnel lors de la validation
+ *     responses:
+ *       200:
+ *         description: Courrier validé et archivé (TRAITE)
+ *       400:
+ *         description: Courrier déjà archivé ou statut invalide
+ *       404:
+ *         description: Courrier introuvable
+ */
+
+/**
+ * @openapi
+ * /courriers/{id}/reject:
+ *   post:
+ *     tags: [Courrier]
+ *     summary: Rejeter un courrier et le classer sans suite
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               commentaire:
+ *                 type: string
+ *                 description: Motif ou commentaire du rejet
+ *     responses:
+ *       200:
+ *         description: Courrier rejeté et archivé (CLASSE_SANS_SUITE)
+ *       400:
+ *         description: Courrier déjà archivé
+ *       404:
+ *         description: Courrier introuvable
+ */
+
+/**
+ * @openapi
  * /courriers/{id}:
  *   put:
  *     tags: [Courrier]
@@ -301,6 +369,10 @@ router.get("/my", courrierController.getCourriersUser);
 router.get("/:id", courrierController.getCourrierById);
 
 router.post("/", upload.single("fichier_joint"), courrierController.createCourrier);
+
+router.post("/:id/validate", courrierController.validateCourrier);
+router.post("/:id/reject", courrierController.rejectCourrier);
+
 
 router.put("/:id", upload.single("fichier_joint"), courrierController.updateCourrier);
 
