@@ -1,0 +1,20 @@
+meta {
+  name: valider courrier
+  type: http
+  seq: 7
+}
+
+post {
+  url: http://localhost:4000/api/courriers/:id/validate
+  body: none
+  auth: inherit
+}
+
+params:path {
+  id: 
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
