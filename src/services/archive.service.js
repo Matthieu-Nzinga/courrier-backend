@@ -10,38 +10,57 @@ class ArchiveService {
     archivedById,
     search,
   }) {
+    page = Number(page);
+    limit = Number(limit);
+
     const skip = (page - 1) * limit;
 
-    const where = {
-      ...(categorie && { categorie }),
-      ...(archivedById && { archivedById }),
-      courrier: {
-        ...(origineId && { origineId }),
-        ...(search && {
-          OR: [
-            {
-              objet: {
-                contains: search,
-                mode: "insensitive",
-              },
+    // 🔐 construction propre du where
+    const where = {};
+
+    // filtre par catégorie
+    if (categorie) {
+      where.categorie = categorie;
+    }
+
+    // filtre par utilisateur qui a archivé
+    if (archivedById) {
+      where.archivedById = archivedById;
+    }
+
+    // filtres liés au courrier
+    if (origineId || search) {
+      where.courrier = {};
+
+      if (origineId) {
+        where.courrier.origineId = origineId;
+      }
+
+      if (search) {
+        where.courrier.OR = [
+          {
+            objet: {
+              contains: search,
+              mode: "insensitive",
             },
-            {
-              numero_courrier: {
-                contains: search,
-                mode: "insensitive",
-              },
+          },
+          {
+            numero_courrier: {
+              contains: search,
+              mode: "insensitive",
             },
-          ],
-        }),
-      },
-    };
+          },
+        ];
+      }
+    }
 
     const [total, rows] = await Promise.all([
       prisma.archiveCourrier.count({ where }),
+
       prisma.archiveCourrier.findMany({
         where,
         skip,
-        take: Number(limit),
+        take: limit,
         orderBy: { createdAt: "desc" },
         include: {
           courrier: {
@@ -64,8 +83,8 @@ class ArchiveService {
     ]);
 
     return {
-      page: Number(page),
-      limit: Number(limit),
+      page,
+      limit,
       total,
       totalPages: Math.ceil(total / limit),
       rows,
