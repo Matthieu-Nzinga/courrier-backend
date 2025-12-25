@@ -179,3 +179,28 @@ exports.getCourrierTraiteParDestinataire = async () => {
     };
   });
 };
+
+exports.getCourriersLuNonLu = async (userId) => {
+  // Total des courriers destinés à l'utilisateur
+  const totalCourriers = await prisma.courrier.count({
+    where: {
+      destUserId: userId
+    }
+  });
+
+  // Total des courriers lus
+  const totalLu = await prisma.courrierLu.count({
+    where: {
+      userId,
+      lu: true,
+      courrier: {
+        destUserId: userId
+      }
+    }
+  });
+
+  return {
+    totalLu,
+    totalNonLu: totalCourriers - totalLu
+  };
+};
