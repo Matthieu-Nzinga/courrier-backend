@@ -119,6 +119,31 @@
  *                         fichier_joint: { type: string }
 */
 
+/**
+ * @openapi
+ * /dashboard/totaux-globaux:
+ *   get:
+ *     tags: [Dashboard]
+ *     summary: Totaux globaux des courriers
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Totaux globaux
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalCourrierEntrant:
+ *                   type: integer
+ *                 totalCourrierSortant:
+ *                   type: integer
+ *                 totalCourrier:
+ *                   type: integer
+ */
+
+
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middlewares/auth.middleware");
