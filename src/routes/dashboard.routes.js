@@ -132,6 +132,8 @@ router.get("/stats", dashboardController.getStats);
 // Liste des agents ayant des dossiers en cours
 router.get("/agents-en-cours", dashboardController.getAgentsEnCours);
 
+router.get("/totaux-globaux", dashboardController.getGlobalCourrierTotals);
+
 // Dossiers en cours pour un agent spécifique
 router.get("/agents/:agentId/dossiers", dashboardController.getDossiersAgent);
 
