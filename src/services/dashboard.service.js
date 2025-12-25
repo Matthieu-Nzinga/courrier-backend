@@ -107,3 +107,31 @@ exports.getGlobalCourrierTotals = async () => {
     totalCourrier: totalEntrant + totalSortant
   };
 };
+
+
+exports.getGlobalCourrierStatuts = async () => {
+  const [valides, rejetes, enCours] = await Promise.all([
+    prisma.courrier.count({
+      where: {
+        statut: { libelle: "Validé" }
+      }
+    }),
+    prisma.courrier.count({
+      where: {
+        statut: { libelle: "Rejeté" }
+      }
+    }),
+    prisma.courrier.count({
+      where: {
+        statut: { libelle: "En cours de traitement" }
+      }
+    })
+  ]);
+
+  return {
+    totalCourrierValide: valides,
+    totalCourrierRejete: rejetes,
+    totalCourrierEnCours: enCours
+  };
+};
+
