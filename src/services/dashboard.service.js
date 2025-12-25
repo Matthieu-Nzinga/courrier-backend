@@ -86,3 +86,24 @@ exports.getDossiersAgent = async (agentId) => {
     estLu: c.courriersLu.length > 0 ? c.courriersLu[0].lu : false
   }));
 };
+
+exports.getGlobalCourrierTotals = async () => {
+  const [totalEntrant, totalSortant] = await Promise.all([
+    prisma.courrier.count({
+      where: {
+        type: { libelle: "Courrier entrant" }
+      }
+    }),
+    prisma.courrier.count({
+      where: {
+        type: { libelle: "Courrier sortant" }
+      }
+    })
+  ]);
+
+  return {
+    totalCourrierEntrant: totalEntrant,
+    totalCourrierSortant: totalSortant,
+    totalCourrier: totalEntrant + totalSortant
+  };
+};
