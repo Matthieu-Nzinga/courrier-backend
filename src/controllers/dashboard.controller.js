@@ -52,3 +52,12 @@ exports.getGlobalCourrierStatuts = async (req, res) => {
   }
 };
 
+exports.getCourrierTraiteParDestinataire = async (req, res) => {
+  try {
+    const data = await dashboardService.getCourrierTraiteParDestinataire();
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur", err });
+  }
+};
