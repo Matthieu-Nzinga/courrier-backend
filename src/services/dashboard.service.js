@@ -146,6 +146,7 @@ exports.getCourrierTraiteParDestinataire = async () => {
       id: true,
       nom: true,
       prenom: true,
+      titre: true,
       courriersDestines: {
         select: {
           statut: {

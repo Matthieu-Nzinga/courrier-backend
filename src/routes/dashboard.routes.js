@@ -194,6 +194,8 @@
  *                     type: string
  *                   prenom:
  *                     type: string
+ *                  titre:
+ *                    type: string
  *                   totalTraites:
  *                     type: integer
  *                   totalNonTraites:
