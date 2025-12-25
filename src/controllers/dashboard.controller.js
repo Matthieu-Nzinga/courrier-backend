@@ -61,3 +61,19 @@ exports.getCourrierTraiteParDestinataire = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", err });
   }
 };
+
+exports.getCourriersLuNonLu = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const data = await dashboardService.getCourriersLuNonLu(userId);
+
+    res.json(data);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Erreur lors du chargement des statistiques",
+      error
+    });
+  }
+};
