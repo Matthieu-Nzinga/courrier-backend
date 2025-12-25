@@ -224,6 +224,9 @@ router.get("/statuts-globaux", dashboardController.getGlobalCourrierStatuts);
 // Courriers traités / non traités par destinataire
 router.get("/destinataires/traites-non-traites", dashboardController.getCourrierTraiteParDestinataire);
 
+router.get("/courriers/lu-non-lu", dashboardController.getCourriersLuNonLu);
+
+
 // Dossiers en cours pour un agent spécifique
 router.get("/agents/:agentId/dossiers", dashboardController.getDossiersAgent);
 
