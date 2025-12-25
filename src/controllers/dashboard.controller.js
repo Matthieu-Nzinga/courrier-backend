@@ -31,3 +31,13 @@ exports.getDossiersAgent = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", err });
   }
 };
+
+exports.getGlobalCourrierTotals = async (req, res) => {
+  try {
+    const totals = await dashboardService.getGlobalCourrierTotals();
+    res.json(totals);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur", err });
+  }
+};
