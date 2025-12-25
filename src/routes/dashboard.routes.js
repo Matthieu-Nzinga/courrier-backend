@@ -143,6 +143,34 @@
  *                   type: integer
  */
 
+/**
+ * @openapi
+ * /dashboard/statuts-globaux:
+ *   get:
+ *     tags: [Dashboard]
+ *     summary: Totaux globaux des courriers par statut
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Totaux globaux par statut
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalCourrierValide:
+ *                   type: integer
+ *                   example: 25
+ *                 totalCourrierRejete:
+ *                   type: integer
+ *                   example: 7
+ *                 totalCourrierEnCours:
+ *                   type: integer
+ *                   example: 13
+ */
+
+
 
 const express = require("express");
 const router = express.Router();
