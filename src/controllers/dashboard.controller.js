@@ -41,3 +41,14 @@ exports.getGlobalCourrierTotals = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", err });
   }
 };
+
+exports.getGlobalCourrierStatuts = async (req, res) => {
+  try {
+    const stats = await dashboardService.getGlobalCourrierStatuts();
+    res.json(stats);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Erreur serveur", err });
+  }
+};
+
