@@ -202,6 +202,29 @@
  *                     type: integer
  */
 
+/**
+ * @openapi
+ * /dashboard/courriers/lu-non-lu:
+ *   get:
+ *     tags: [Dashboard]
+ *     summary: Total des courriers lus et non lus pour l'utilisateur connecté
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Statistiques de lecture
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalLu:
+ *                   type: integer
+ *                 totalNonLu:
+ *                   type: integer
+ */
+
+
 
 const express = require("express");
 const router = express.Router();
