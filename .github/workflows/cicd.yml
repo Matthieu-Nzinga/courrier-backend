@@ -57,4 +57,4 @@ jobs:
           docker pull $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker stop mail-manager-api-container || true
           docker rm mail-manager-api-container || true
-          docker run -d -p 3001:4000 --name mail-manager-api-container -e DATABASE_URL='${{secrets.DATABASE_URL}}' -e JWT_SECRET='${{secrets.JWT_SECRET}}' -e AWS_REGION='${{secrets.AWS_REGION}}' -e AWS_ACCESS_KEY='${{secrets.AWS_ACCESS_KEY}}' -e AWS_SECRET_KEY='${{secrets.AWS_SECRET_KEY}}' -e AWS_S3_BUCKET='${{secrets.AWS_S3_BUCKET}}' $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker run -d -p 3001:4000 --restart unless-stopped --name mail-manager-api-container -e DATABASE_URL='${{secrets.DATABASE_URL}}' -e JWT_SECRET='${{secrets.JWT_SECRET}}' -e AWS_REGION='${{secrets.AWS_REGION}}' -e AWS_ACCESS_KEY='${{secrets.AWS_ACCESS_KEY}}' -e AWS_SECRET_KEY='${{secrets.AWS_SECRET_KEY}}' -e AWS_S3_BUCKET='${{secrets.AWS_S3_BUCKET}}' $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
