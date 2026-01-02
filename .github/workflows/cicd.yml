@@ -62,7 +62,6 @@ jobs:
           echo "Pulling image..."
           docker pull $IMAGE
 
-          # Detect current active port from Nginx upstream
           CURRENT_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' $NGINX_UPSTREAM)
 
           if [ "$CURRENT_PORT" = "3001" ]; then
@@ -72,7 +71,14 @@ jobs:
           fi
 
           echo "Current active port: $CURRENT_PORT"
-          echo "Starting NEW container on port: $NEW_PORT"
+          echo "Deploying NEW container on port: $NEW_PORT"
+
+          # 🔐 GUARANTEE NEW_PORT IS FREE
+          if lsof -iTCP:$NEW_PORT -sTCP:LISTEN >/dev/null 2>&1; then
+            echo "Port $NEW_PORT is already in use. Stopping old container first..."
+            docker stop mail-manager-api-container || true
+            docker rm mail-manager-api-container || true
+          fi
 
           # Start new container
           docker run -d \
@@ -80,51 +86,40 @@ jobs:
             -p $NEW_PORT:4000 \
             --memory="600m" \
             --cpus="0.75" \
-            -e DATABASE_URL='${{secrets.DATABASE_URL}}' \
-            -e JWT_SECRET='${{secrets.JWT_SECRET}}' \
-            -e AWS_REGION='${{secrets.AWS_REGION}}' \
-            -e AWS_ACCESS_KEY='${{secrets.AWS_ACCESS_KEY}}' \
-            -e AWS_SECRET_KEY='${{secrets.AWS_SECRET_KEY}}' \
-            -e AWS_S3_BUCKET='${{secrets.AWS_S3_BUCKET}}' \
+            -e DATABASE_URL='${{ secrets.DATABASE_URL }}' \
+            -e JWT_SECRET='${{ secrets.JWT_SECRET }}' \
+            -e AWS_REGION='${{ secrets.AWS_REGION }}' \
+            -e AWS_ACCESS_KEY='${{ secrets.AWS_ACCESS_KEY }}' \
+            -e AWS_SECRET_KEY='${{ secrets.AWS_SECRET_KEY }}' \
+            -e AWS_S3_BUCKET='${{ secrets.AWS_S3_BUCKET }}' \
             --restart unless-stopped \
             $IMAGE
 
-          echo "Waiting for API to be ready..."
-          sleep 10
-
-          # ---- HEALTH CHECK (CRITICAL PART) ----
+          # Health check
           echo "Waiting for API to be healthy on port $NEW_PORT..."
-
           for i in {1..15}; do
             if curl -sf http://127.0.0.1:$NEW_PORT/api/health > /dev/null; then
-              echo "API is healthy on port $NEW_PORT"
+              echo "API is healthy"
               break
             fi
-
             if [ "$i" -eq 15 ]; then
-              echo "❌ API did not become healthy, aborting deploy"
+              echo "❌ API failed health check"
               docker logs mail-manager-api-new
               docker stop mail-manager-api-new
               docker rm mail-manager-api-new
               exit 1
             fi
-
             sleep 2
           done
 
-
-          # ---- SWITCH NGINX TRAFFIC ----
-          echo "Switching Nginx traffic from $CURRENT_PORT to $NEW_PORT..."
+          # Switch traffic
           sudo sed -i "s/$CURRENT_PORT/$NEW_PORT/g" $NGINX_UPSTREAM
           sudo nginx -t
           sudo systemctl reload nginx
 
-          # ---- CLEANUP OLD CONTAINER ----
-          echo "Stopping old container..."
+          # Cleanup
           docker stop mail-manager-api-container || true
           docker rm mail-manager-api-container || true
-
-          echo "Renaming NEW container..."
           docker rename mail-manager-api-new mail-manager-api-container
 
           echo "Deployment completed successfully 🚀"
