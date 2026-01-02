@@ -50,11 +50,40 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Deploy container
+      - name: Blue-Green Deploy API
         env:
           IMAGE_TAG: latest
         run: |
-          docker pull $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
+          set -e
+
+          IMAGE="$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG"
+          ENV_FILE="/etc/mail-manager/api.env"
+          NGINX_UPSTREAM="/etc/nginx/conf.d/mdnac-api-upstream.conf"
+
+          echo "Pulling image..."
+          docker pull $IMAGE
+
+          echo "Starting NEW container on port 3002..."
+          docker run -d \
+            --name mail-manager-api-new \
+            -p 3002:4000 \
+            -e DATABASE_URL='${{secrets.DATABASE_URL}}' -e JWT_SECRET='${{secrets.JWT_SECRET}}' -e AWS_REGION='${{secrets.AWS_REGION}}' -e AWS_ACCESS_KEY='${{secrets.AWS_ACCESS_KEY}}' -e AWS_SECRET_KEY='${{secrets.AWS_SECRET_KEY}}' -e AWS_S3_BUCKET='${{secrets.AWS_S3_BUCKET}}'--env-file $ENV_FILE \
+            --restart unless-stopped \
+            $IMAGE
+
+          echo "Waiting for API to be ready..."
+          sleep 10
+
+          echo "Switching Nginx traffic to new container..."
+          sudo sed -i 's/3001/3002/g' $NGINX_UPSTREAM
+          sudo nginx -t
+          sudo systemctl reload nginx
+
+          echo "Stopping OLD container..."
           docker stop mail-manager-api-container || true
           docker rm mail-manager-api-container || true
-          docker run -d -p 3001:4000 --restart unless-stopped --name mail-manager-api-container -e DATABASE_URL='${{secrets.DATABASE_URL}}' -e JWT_SECRET='${{secrets.JWT_SECRET}}' -e AWS_REGION='${{secrets.AWS_REGION}}' -e AWS_ACCESS_KEY='${{secrets.AWS_ACCESS_KEY}}' -e AWS_SECRET_KEY='${{secrets.AWS_SECRET_KEY}}' -e AWS_S3_BUCKET='${{secrets.AWS_S3_BUCKET}}' $ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG
+
+          echo "Renaming NEW container..."
+          docker rename mail-manager-api-new mail-manager-api-container
+
+          echo "Deployment completed successfully 🚀"
