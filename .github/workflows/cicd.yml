@@ -64,6 +64,7 @@ jobs:
 
           CURRENT_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' $NGINX_UPSTREAM)
 
+          # Use the port that's NOT currently active
           if [ "$CURRENT_PORT" = "3001" ]; then
             NEW_PORT=3002
           else
@@ -73,22 +74,21 @@ jobs:
           echo "Current active port: $CURRENT_PORT"
           echo "Deploying NEW container on port: $NEW_PORT"
 
-          # 🔐 GUARANTEE NEW_PORT IS FREE
+          # Stop any existing containers that might be using our target port
           docker stop mail-manager-api-new || true
           docker rm mail-manager-api-new || true
           
-          # Force kill any process using the new port
+          # Force stop any container using the NEW_PORT
+          CONTAINERS_ON_PORT=$(docker ps --format "{{.Names}} {{.Ports}}" | grep ":$NEW_PORT->" | cut -d' ' -f1)
+          for container in $CONTAINERS_ON_PORT; do
+            echo "Force stopping container $container using port $NEW_PORT"
+            docker stop $container || true
+            docker rm $container || true
+          done
+          
+          # Additional safety: kill any process on the port
           sudo fuser -k $NEW_PORT/tcp || true
           sleep 2
-          
-          # Double check and force cleanup if port still in use
-          if lsof -iTCP:$NEW_PORT -sTCP:LISTEN >/dev/null 2>&1; then
-            echo "Port $NEW_PORT is still in use. Force cleaning..."
-            docker stop mail-manager-api-container || true
-            docker rm mail-manager-api-container || true
-            sudo fuser -k $NEW_PORT/tcp || true
-            sleep 3
-          fi
 
           # Start new container
           docker run -d \
