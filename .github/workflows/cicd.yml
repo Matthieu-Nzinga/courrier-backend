@@ -57,16 +57,27 @@ jobs:
           set -e
 
           IMAGE="$ECR_REGISTRY/$REPOSITORY:$IMAGE_TAG"
-          ENV_FILE="/etc/mail-manager/api.env"
           NGINX_UPSTREAM="/etc/nginx/conf.d/mdnac-api-upstream.conf"
 
           echo "Pulling image..."
           docker pull $IMAGE
 
-          echo "Starting NEW container on port 3002..."
+          # Detect current active port from Nginx upstream
+          CURRENT_PORT=$(grep -oP '127.0.0.1:\K[0-9]+' $NGINX_UPSTREAM)
+
+          if [ "$CURRENT_PORT" = "3001" ]; then
+            NEW_PORT=3002
+          else
+            NEW_PORT=3001
+          fi
+
+          echo "Current active port: $CURRENT_PORT"
+          echo "Starting NEW container on port: $NEW_PORT"
+
+          # Start new container
           docker run -d \
             --name mail-manager-api-new \
-            -p 3002:4000 \
+            -p $NEW_PORT:4000 \
             --memory="600m" \
             --cpus="0.75" \
             -e DATABASE_URL='${{secrets.DATABASE_URL}}' -e JWT_SECRET='${{secrets.JWT_SECRET}}' -e AWS_REGION='${{secrets.AWS_REGION}}' -e AWS_ACCESS_KEY='${{secrets.AWS_ACCESS_KEY}}' -e AWS_SECRET_KEY='${{secrets.AWS_SECRET_KEY}}' -e AWS_S3_BUCKET='${{secrets.AWS_S3_BUCKET}}' \
