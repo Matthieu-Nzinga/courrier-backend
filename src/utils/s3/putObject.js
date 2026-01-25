@@ -13,14 +13,14 @@ exports.putObject = async (file, fileName) => {
     const data = await s3Client.send(command);
 
     if (data.$metadata.httpStatusCode !== 200) {
-      return;
+      throw new Error("Failed to upload file to S3");
     }
 
     let url = `https://${process.env.AWS_S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${params.Key}`;
-    console.log(url);
 
     return { url, key: params.Key };
   } catch (err) {
-    console.error(err);
+    console.error("S3 Upload Error:", err);
+    throw err;
   }
 };

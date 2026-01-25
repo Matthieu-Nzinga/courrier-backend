@@ -5,9 +5,13 @@ meta {
 }
 
 get {
-  url: http://3.210.143.153/api/dashboard/agents-en-cours
+  url: http://localhost:4000/api/dashboard/agents-en-cours
   body: none
-  auth: inherit
+  auth: bearer
+}
+
+auth:bearer {
+  token: 
 }
 
 settings {

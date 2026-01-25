@@ -92,8 +92,8 @@ model Courrier {
   objet           String
   description     String?
   date_signature  DateTime?
-  fichier_joint   String?
   s3_key          String?
+  nom_fichier     String?
 
   archive ArchiveCourrier?
 
