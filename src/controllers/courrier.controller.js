@@ -5,24 +5,14 @@ const { generateFileName } = require("../utils/fileNaming");
 
 const { getSignedUrl } = require("../utils/s3/getObject");
 
-const addPdfUrl = (courrier, req) => {
+const addPdfUrl = async (courrier) => {
   const { s3_key, ...courrierData } = courrier;
 
   if (!s3_key) {
     return { ...courrierData, pdfUrl: null };
   }
 
-  const isProduction = process.env.NODE_ENV === "production";
-
-  if (isProduction) {
-    const protocol = req.get("X-Forwarded-Proto") || req.protocol;
-    const host = req.get("X-Forwarded-Host") || req.get("host");
-    const baseUrl = `${protocol}://${host}`;
-    return { ...courrierData, pdfUrl: `${baseUrl}/api/files/${s3_key}` };
-  }
-
-  // Development: generate S3 signed URL
-  const pdfUrl = getSignedUrl(s3_key);
+  const pdfUrl = await getSignedUrl(s3_key, 300); // 5 min
   return { ...courrierData, pdfUrl };
 };
 
@@ -30,7 +20,7 @@ exports.getCourriers = async (req, res) => {
   try {
     const userId = req.user.userId;
     const data = await courrierService.findAll(userId);
-    const result = data.map((c) => addPdfUrl(c, req));
+    const result = data.map((c) => addPdfUrl(c));
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur", err });
@@ -42,7 +32,7 @@ exports.getCourrierById = async (req, res) => {
     const userId = req.user.userId;
     const data = await courrierService.findById(req.params.id, userId);
     if (!data) return res.status(404).json({ message: "Courrier introuvable" });
-    res.json(addPdfUrl(data, req));
+    res.json(addPdfUrl(data));
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur", err });
   }
@@ -52,7 +42,7 @@ exports.getCourriersUser = async (req, res) => {
   try {
     const userId = req.user.userId;
     const data = await courrierService.findByUser(userId);
-    const result = data.map((c) => addPdfUrl(c, req));
+    const result = data.map((c) => addPdfUrl(c));
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur", err });
@@ -145,7 +135,7 @@ exports.getCourriersPaginated = async (req, res) => {
     });
 
     // Ajout pdfUrl
-    const finalRows = data.rows.map((c) => addPdfUrl(c, req));
+    const finalRows = data.rows.map((c) => addPdfUrl(c));
 
     res.json({
       page: data.page,
@@ -175,7 +165,7 @@ exports.getCourriersUserPaginated = async (req, res) => {
       { typeId, search },
     );
 
-    const finalRows = data.rows.map((c) => addPdfUrl(c, req));
+    const finalRows = data.rows.map((c) => addPdfUrl(c));
 
     res.json({
       page: data.page,
@@ -236,7 +226,7 @@ exports.updateCourrierPriority = async (req, res) => {
       return res.status(404).json({ message: "Courrier introuvable" });
     }
 
-    res.json(addPdfUrl(updatedCourrier, req));
+    res.json(addPdfUrl(updatedCourrier));
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
