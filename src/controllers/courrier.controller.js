@@ -20,7 +20,7 @@ exports.getCourriers = async (req, res) => {
   try {
     const userId = req.user.userId;
     const data = await courrierService.findAll(userId);
-    const result = data.map((c) => addPdfUrl(c));
+    const result = await Promise.all(data.map((c) => addPdfUrl(c)));
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur", err });
@@ -32,7 +32,7 @@ exports.getCourrierById = async (req, res) => {
     const userId = req.user.userId;
     const data = await courrierService.findById(req.params.id, userId);
     if (!data) return res.status(404).json({ message: "Courrier introuvable" });
-    res.json(addPdfUrl(data));
+    res.json(await addPdfUrl(data));
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur", err });
   }
@@ -42,7 +42,7 @@ exports.getCourriersUser = async (req, res) => {
   try {
     const userId = req.user.userId;
     const data = await courrierService.findByUser(userId);
-    const result = data.map((c) => addPdfUrl(c));
+    const result = await Promise.all(data.map((c) => addPdfUrl(c)));
     res.json(result);
   } catch (err) {
     res.status(500).json({ message: "Erreur serveur", err });
@@ -135,7 +135,7 @@ exports.getCourriersPaginated = async (req, res) => {
     });
 
     // Ajout pdfUrl
-    const finalRows = data.rows.map((c) => addPdfUrl(c));
+    const finalRows = await Promise.all(data.rows.map((c) => addPdfUrl(c)));
 
     res.json({
       page: data.page,
@@ -165,7 +165,7 @@ exports.getCourriersUserPaginated = async (req, res) => {
       { typeId, search },
     );
 
-    const finalRows = data.rows.map((c) => addPdfUrl(c));
+    const finalRows = await Promise.all(data.rows.map((c) => addPdfUrl(c)));
 
     res.json({
       page: data.page,
@@ -226,7 +226,7 @@ exports.updateCourrierPriority = async (req, res) => {
       return res.status(404).json({ message: "Courrier introuvable" });
     }
 
-    res.json(addPdfUrl(updatedCourrier));
+    res.json(await addPdfUrl(updatedCourrier));
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
