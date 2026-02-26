@@ -199,6 +199,38 @@
 
 /**
  * @openapi
+ * /courriers/upload-file:
+ *   post:
+ *     tags: [Courrier]
+ *     summary: Upload un fichier avant la création du courrier (comme Gmail)
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [file]
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Fichier uploadé avec succès
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 s3_key: { type: string }
+ *                 nom_fichier: { type: string }
+ *                 url: { type: string }
+ *       400: { description: Erreur validation }
+
+/**
+ * @openapi
  * /courriers:
  *   post:
  *     tags: [Courrier]
@@ -211,7 +243,7 @@
  *         multipart/form-data:
  *           schema:
  *             type: object
- *             required: [origine, objet, date_signature, fichier_joint, typeId, destUserId]
+ *             required: [origine, objet, date_signature, typeId, destUserId]
  *             properties:
  *               origineId:
  *                 type: string
@@ -225,6 +257,13 @@
  *               fichier_joint:
  *                 type: string
  *                 format: binary
+ *                 description: Fichier à uploader directement
+ *               s3_key:
+ *                 type: string
+ *                 description: Clé S3 d'un fichier déjà uploadé via /upload-file
+ *               nom_fichier:
+ *                 type: string
+ *                 description: Nom du fichier (requis si s3_key est fourni)
  *               typeId: { type: string }
  *               destUserId: { type: string }
  *     responses:
@@ -404,6 +443,7 @@ router.get("/my/paginated", courrierController.getCourriersUserPaginated);
 router.get("/my", courrierController.getCourriersUser);
 router.get("/:id", courrierController.getCourrierById);
 
+router.post("/upload-file", upload.single("file"), courrierController.uploadFile);
 router.post("/", upload.single("fichier_joint"), courrierController.createCourrier);
 
 router.post("/:id/validate", courrierController.validateCourrier);

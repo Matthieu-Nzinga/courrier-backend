@@ -49,14 +49,40 @@ exports.getCourriersUser = async (req, res) => {
   }
 };
 
-exports.createCourrier = async (req, res) => {
+exports.uploadFile = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: "Le fichier PDF est requis" });
+      return res.status(400).json({ message: "Le fichier est requis" });
     }
 
     const fileName = generateFileName(req.file.originalname);
     const result = await putObject(req.file.buffer, fileName);
+
+    res.status(200).json({
+      s3_key: result?.key,
+      nom_fichier: req.file.originalname,
+      url: result?.url,
+    });
+  } catch (err) {
+    res.status(400).json({ message: "Erreur lors de l'upload", err });
+  }
+};
+
+exports.createCourrier = async (req, res) => {
+  try {
+    let s3_key, nom_fichier;
+
+    if (req.body.s3_key) {
+      s3_key = req.body.s3_key;
+      nom_fichier = req.body.nom_fichier;
+    } else if (req.file) {
+      const fileName = generateFileName(req.file.originalname);
+      const result = await putObject(req.file.buffer, fileName);
+      s3_key = result?.key;
+      nom_fichier = req.file.originalname;
+    } else {
+      return res.status(400).json({ message: "Le fichier PDF est requis" });
+    }
 
     const data = await courrierService.create({
       origineId: req.body.origineId,
@@ -64,8 +90,8 @@ exports.createCourrier = async (req, res) => {
       objet: req.body.objet,
       description: req.body.description,
       date_signature: req.body.date_signature,
-      s3_key: result?.key,
-      nom_fichier: req.file.originalname,
+      s3_key,
+      nom_fichier,
       typeId: req.body.typeId,
       destUserId: req.body.destUserId,
       creatorId: req.user.userId,
